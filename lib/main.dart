@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   // scanBarcodeNormal (Function)
-  Future<void> scanBarcodeNormal() async {
+  Future<void> scanBarcodeNormal(BuildContext context) async {
     String barcodeScanRes;
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
@@ -50,6 +50,11 @@ class _MyAppState extends State<MyApp> {
     setState(() {
       _scanBarcode = barcodeScanRes;
     });
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MyHomePage(title: '', barcode: _scanBarcode), //title을 요구해서 컴파일 오류만 안나게 처리함
+        ));
   }
 
   // Widget build
@@ -67,13 +72,7 @@ class _MyAppState extends State<MyApp> {
                       children: <Widget>[
                         ElevatedButton(
                             onPressed: () {
-                              scanBarcodeNormal();
-
-                              Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => MyHomePage(title: '', barcode: _scanBarcode), //title을 요구해서 컴파일 오류만 안나게 처리함
-                                  ));
+                              scanBarcodeNormal(context);
                             },
                             child: Text('Start barcode scan')),
 
@@ -134,6 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void getFoodNum(String barcd)async {
     var jsonUrl = "http://openapi.foodsafetykorea.go.kr/api/$authkey/C005/json/1/5" +
         '/BAR_CD=$barcd';
+    print(jsonUrl);
     var response = await http.get(Uri.parse(jsonUrl));
     var result=BarcodeApiResponse.fromJson(jsonDecode(response.body));
     //print(result.c005.result.message);
@@ -154,9 +154,11 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     print(arr);
 
-  }_MyHomePageState(this.barcode){
+  }
+  _MyHomePageState(String barcode){
     //jsonString='$jsonString1$jsonString2$jsonString3';
-    getFoodNum(barcode);
+    this.barcode=barcode;
+    getFoodNum(this.barcode);
   }
 
   @override
